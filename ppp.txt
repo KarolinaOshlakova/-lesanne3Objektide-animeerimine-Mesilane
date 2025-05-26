@@ -1,0 +1,47 @@
+import pygame
+import sys
+
+pygame.init()
+
+# ?????
+light_blue = (173, 216, 230)
+gray = (128, 128, 128)
+yellow = (255, 255, 0)
+
+car_img = pygame.image.load("ppp.png")
+car_img = pygame.transform.scale(car_img, (40, 40))
+
+screen_width = 640
+screen_height = 480
+screen = pygame.display.set_mode([screen_width, screen_height])
+pygame.display.set_caption("Extra Thick Vertical Road")
+
+def drawVerticalRoad(screen):
+    road_width = 300  # ??? ????? ??????
+    road_x = screen_width // 2 - road_width // 2
+    road_height = screen_height
+
+    # ?????? ???????????? ??????
+    pygame.draw.rect(screen, gray, (road_x, 0, road_width, road_height))
+
+    # ?????? ??????????? ?????????? ????? ?? ?????????
+    dash_height = 40
+    dash_width = 12  # ????? ?????
+    dash_gap = 20
+    dash_y = 0
+    center_x = road_x + road_width // 2 - dash_width // 2
+    while dash_y < road_height:
+        pygame.draw.rect(screen, yellow, (center_x, dash_y, dash_width, dash_height))
+        dash_y += dash_height + dash_gap
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    screen.fill(light_blue)
+
+    drawVerticalRoad(screen)
+
+    pygame.display.flip()
