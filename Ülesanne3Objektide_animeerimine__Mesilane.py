@@ -1,9 +1,8 @@
-import pygame
+﻿import pygame
 import sys
 import random
 
 pygame.init()
-
 
 light_blue = (173, 216, 230)
 gray = (128, 128, 128)
@@ -11,6 +10,7 @@ yellow = (255, 255, 0)
 brown = (139, 69, 19)
 red = (255, 0, 0)
 dark_red = (200, 0, 0)
+black = (0, 0, 0)
 
 screen_width = 640
 screen_height = 480
@@ -19,7 +19,7 @@ pygame.display.set_caption("Autod ja takistused")
 
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 60)
-
+score_font = pygame.font.SysFont(None, 40)
 
 REDcar_img = pygame.image.load("ppp.png")
 REDcar_img = pygame.transform.scale(REDcar_img, (160, 130))
@@ -55,7 +55,6 @@ blue_car_x = half + half // 2 - car_width // 2
 red_car_y = screen_height - car_height - 20
 blue_car_y = screen_height - car_height - 160
 
-
 red_speed_normal = -3
 red_speed_slow = -1
 red_speed_fast = -5
@@ -65,7 +64,6 @@ blue_speed_normal = -2
 blue_speed_slow = -0.8
 blue_speed_fast = -3.5
 blue_car_speed_y = blue_speed_normal
-
 
 red_slowdown_time = 0
 red_speedup_time = 0
@@ -102,6 +100,9 @@ obstacles.append(spawn_obstacle(for_red=False))
 red_boosts.append(spawn_boost(for_red=True))
 blue_boosts.append(spawn_boost(for_red=False))
 
+red_score = 0
+blue_score = 0
+
 game_over = False
 
 while not game_over:
@@ -112,30 +113,34 @@ while not game_over:
             pygame.quit()
             sys.exit()
 
-
-
- 
     keys = pygame.key.get_pressed()
+
+    # Управление синей машиной (стрелки влево/вправо)
     if keys[pygame.K_LEFT] and blue_car_x > half:
         blue_car_x -= 5
     if keys[pygame.K_RIGHT] and blue_car_x + car_width < screen_width:
         blue_car_x += 5
 
+    # Управление красной машиной (A и D)
+    if keys[pygame.K_a] and red_car_x > 0:
+        red_car_x -= 5
+    if keys[pygame.K_d] and red_car_x + car_width < half:
+        red_car_x += 5
+
     red_car_y += red_car_speed_y
     blue_car_y += blue_car_speed_y
 
-
     if red_car_y < -car_height:
         red_car_y = screen_height
+        red_score += 1  # добавляем очко при "обгоне"
     if blue_car_y < -car_height:
         blue_car_y = screen_height
+        blue_score += 1  # добавляем очко при "обгоне"
 
- 
     for i in range(len(obstacles)):
         obstacles[i].y += 2
         if obstacles[i].y > screen_height:
             obstacles[i] = spawn_obstacle(for_red=(i == 0))
-
 
     for i in range(len(red_boosts)):
         red_boosts[i].y += 2
@@ -146,7 +151,6 @@ while not game_over:
         blue_boosts[i].y += 2
         if blue_boosts[i].y > screen_height:
             blue_boosts[i] = spawn_boost(for_red=False)
-
 
     red_rect = pygame.Rect(red_car_x, red_car_y, car_width, car_height)
     blue_rect = pygame.Rect(blue_car_x, blue_car_y, car_width, car_height)
@@ -174,13 +178,11 @@ while not game_over:
             blue_car_speed_y = blue_speed_fast
             blue_speedup_time = pygame.time.get_ticks()
 
-
     now = pygame.time.get_ticks()
     if not red_in_obstacle and now - red_slowdown_time > 2000 and now - red_speedup_time > 2000:
         red_car_speed_y = red_speed_normal
     if not blue_in_obstacle and now - blue_slowdown_time > 2000 and now - blue_speedup_time > 2000:
         blue_car_speed_y = blue_speed_normal
-
 
     if red_rect.colliderect(blue_rect):
         show_game_over()
@@ -196,5 +198,12 @@ while not game_over:
 
     screen.blit(REDcar_img, (red_car_x, red_car_y))
     screen.blit(BLcar_img, (blue_car_x, blue_car_y))
+
+    # Отображаем очки в углах экрана на эстонском
+    red_score_text = score_font.render(f"Punane: {red_score}", True, black)
+    blue_score_text = score_font.render(f"Sinine: {blue_score}", True, black)
+
+    screen.blit(red_score_text, (10, 10))  # левый верхний угол
+    screen.blit(blue_score_text, (screen_width - blue_score_text.get_width() - 10, 10))  # правый верхний угол
 
     pygame.display.flip()
